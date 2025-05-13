@@ -1,0 +1,23 @@
+# manifests/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helloworld
+  labels:
+    app: helloworld
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: helloworld
+  template:
+    metadata:
+      labels:
+        app: helloworld
+    spec:
+      containers:
+        - name: helloworld
+          image: ghcr.io/viktor8881/helloworld:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
