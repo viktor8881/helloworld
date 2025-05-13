@@ -17,7 +17,6 @@ spec:
     spec:
       containers:
         - name: helloworld
-          image: ghcr.io/viktor8881/helloworld:latest
-          imagePullPolicy: IfNotPresent
+          image: nginx:alpine
           ports:
             - containerPort: 8080
