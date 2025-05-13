@@ -2,8 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: helloworld
+  namespace: default
   labels:
-    app: helloworld
+    app: helloworld #  ← label совпадает с Service
 spec:
   replicas: 1
   selector:
@@ -16,6 +17,6 @@ spec:
     spec:
       containers:
         - name: helloworld
-          image: nginx:alpine
+          image: nginx:alpine # для проверки. потом подставишь свой образ
           ports:
-            - containerPort: 80
+            - containerPort: 80 # nginx слушает 80
