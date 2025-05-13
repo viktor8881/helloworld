@@ -1,4 +1,3 @@
-# manifests/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,4 +18,4 @@ spec:
         - name: helloworld
           image: nginx:alpine
           ports:
-            - containerPort: 8080
+            - containerPort: 80
