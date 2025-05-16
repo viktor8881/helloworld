@@ -34,7 +34,8 @@ jobs:
       - name: Debug PAT length
         env:
           TOKEN: ${{ secrets.PERSONAL_TOKEN }}
-        run: echo "🔑 TOKEN length: ${#TOKEN}"
+        run: |
+          echo "🔑 TOKEN length: ${#TOKEN}"
 
       - name: Commit & push to deploy (via PAT)
         env:
