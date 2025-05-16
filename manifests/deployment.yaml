@@ -17,6 +17,9 @@ spec:
     spec:
       containers:
         - name: helloworld
-          image: nginx:alpine # для проверки. потом подставишь свой образ
+          image: ghcr.io/viktor8881/helloworld:v1
           ports:
-            - containerPort: 80 # nginx слушает 80
+            - containerPort: 8080
+          # image: nginx:alpine # для проверки. потом подставишь свой образ
+          # ports:
+          #   - containerPort: 80 # nginx слушает 80
