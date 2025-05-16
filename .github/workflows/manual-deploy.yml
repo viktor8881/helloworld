@@ -15,13 +15,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install yq
+      - name: Install yq (Mike Farah)
         run: |
-          sudo apt-get update && sudo apt-get install -y yq
+          wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
+          chmod +x /usr/local/bin/yq
 
       - name: Update image tag in deployment.yaml
         run: |
-          yq eval '.spec.template.spec.containers[0].image = "ghcr.io/${{ github.repository_owner }}/helloworld:${{ github.event.inputs.version }}"' -i manifests/deployment.yaml
+          yq e '.spec.template.spec.containers[0].image = "ghcr.io/${{ github.repository_owner }}/helloworld:${{ github.event.inputs.version }}"' -i manifests/deployment.yaml
 
       - name: Commit and push changes
         run: |
