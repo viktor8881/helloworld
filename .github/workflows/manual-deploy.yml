@@ -22,31 +22,31 @@ jobs:
           curl -sSL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
             -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
 
-            - name: Patch image tag
-              run: |
-                yq -i \
-                  ".spec.template.spec.containers[0].image = \"ghcr.io/${{ github.repository_owner }}/helloworld:${{ github.event.inputs.version }}\"" \
-                  manifests/deployment.yaml
-                echo "👉 Образ в манифесте:"
-                yq '.spec.template.spec.containers[0].image' manifests/deployment.yaml
+      - name: Patch image tag
+        run: |
+          yq -i \
+            ".spec.template.spec.containers[0].image = \"ghcr.io/${{ github.repository_owner }}/helloworld:${{ github.event.inputs.version }}\"" \
+            manifests/deployment.yaml
+          echo "👉 Образ в манифесте:"
+          yq '.spec.template.spec.containers[0].image' manifests/deployment.yaml
 
-            # 🐛⟵   ДОБАВЬ вот этот шаг
-            - name: Debug PAT length
-              env:
-                TOKEN: ${{ secrets.PERSONAL_TOKEN }}
-              run: echo "🔑 TOKEN length: ${#TOKEN}"
+      # 🐛⟵   ДОБАВЬ вот этот шаг
+      - name: Debug PAT length
+        env:
+          TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+        run: echo "🔑 TOKEN length: ${#TOKEN}"
 
-            - name: Commit & push to deploy (via PAT)
-              env:
-                PAT: ${{ secrets.PERSONAL_TOKEN }}
-              run: |
-                git config user.name "github-actions"
-                git config user.email "github-actions@github.com"
+      - name: Commit & push to deploy (via PAT)
+        env:
+          PAT: ${{ secrets.PERSONAL_TOKEN }}
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
 
-                git remote remove origin || true
-                git remote add origin https://x-access-token:${PAT}@github.com/${{ github.repository }}
-                git remote -v
+          git remote remove origin || true
+          git remote add origin https://x-access-token:${PAT}@github.com/${{ github.repository }}
+          git remote -v
 
-                git add manifests/deployment.yaml
-                git commit -m "chore: deploy ${{ github.event.inputs.version }}"
-                git push origin HEAD:deploy
+          git add manifests/deployment.yaml
+          git commit -m "chore: deploy ${{ github.event.inputs.version }}"
+          git push origin HEAD:deploy
