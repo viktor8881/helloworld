@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Тег образа для деплоя (например: v1.0.3 или latest)"
+        description: "Tag образа (например v1.2.3 или latest)"
         required: true
 
 jobs:
@@ -12,81 +12,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code (deploy branch)
+      - name: Checkout deploy branch
         uses: actions/checkout@v4
-        with:name: Manual Deploy to Prod
-
-        on:
-          workflow_dispatch:
-            inputs:
-              version:
-                description: "Тег образа для деплоя (например: v1.0.3 или latest)"
-                required: true
-
-        jobs:
-          deploy:
-            runs-on: ubuntu-latest
-
-            steps:
-              - name: Checkout code (deploy branch)
-                uses: actions/checkout@v4
-                with:
-                  ref: deploy
-
-              - name: Install yq (Mike Farah)
-                run: |
-                  wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
-                  chmod +x /usr/local/bin/yq
-
-              - name: Update image tag in deployment.yaml
-                run: |
-                  yq e ".spec.template.spec.containers[0].image = \"ghcr.io/${{ github.repository_owner }}/helloworld:${{ github.event.inputs.version }}\"" -i manifests/deployment.yaml
-                  echo "🔍 Новый тег образа подставлен:"
-                  yq e ".spec.template.spec.containers[0].image" manifests/deployment.yaml
-
-              - name: Commit and push changes to deploy (via PAT)
-                env:
-                  TOKEN: ${{ secrets.PERSONAL_TOKEN }}
-                run: |
-                  git config user.name github-actions
-                  git config user.email github-actions@github.com
-
-                  git remote remove origin
-                  git remote add origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
-
-                  git add manifests/deployment.yaml
-                  git commit -m "chore: deploy ${{ github.event.inputs.version }}"
-                  git push origin HEAD:deploy
+        with:
           ref: deploy
 
       - name: Install yq (Mike Farah)
         run: |
-          wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
-          chmod +x /usr/local/bin/yq
+          curl -sSL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
+            -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
 
-      - name: Update image tag in deployment.yaml
+      - name: Patch image tag
         run: |
-          yq e ".spec.template.spec.containers[0].image = \"ghcr.io/${{ github.repository_owner }}/helloworld:${{ github.event.inputs.version }}\"" -i manifests/deployment.yaml
-          echo "🔍 Новый образ:"
-          grep image manifests/deployment.yaml
+          yq -i \
+            ".spec.template.spec.containers[0].image = \"ghcr.io/${{ github.repository_owner }}/helloworld:${{ github.event.inputs.version }}\"" \
+            manifests/deployment.yaml
+          echo "👉 Образ в манифесте:"
+          yq '.spec.template.spec.containers[0].image' manifests/deployment.yaml
 
-            - name: Commit and push changes to deploy (via PAT)
-              env:
-                TOKEN: ${{ secrets.PERSONAL_TOKEN }}
-              run: |
-                git config user.name github-actions
-                git config user.email github-actions@github.com
+      - name: Commit & push to deploy (PAT)
+        env:
+          PAT: ${{ secrets.PERSONAL_TOKEN }}
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
 
-                # удаляем origin и пересоздаём с PAT
-                git remote remove origin
-                git remote add origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
+          git remote remove origin
+          git remote add origin https://x-access-token:${PAT}@github.com/${{ github.repository }}
 
-                echo "📦 Git статус перед пушем:"
-                git status
-                git diff manifests/deployment.yaml
-
-                git add manifests/deployment.yaml
-                git commit -m "chore: deploy ${{ github.event.inputs.version }}"
-
-                # пушим явно текущую HEAD в ветку deploy
-                git push origin HEAD:deploy
+          git add manifests/deployment.yaml
+          git commit -m "chore: deploy ${{ github.event.inputs.version }}"
+          git push origin HEAD:deploy
