@@ -44,10 +44,8 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          git remote remove origin || true
-          git remote add origin https://x-access-token:${PAT}@github.com/${{ github.repository }}
-          git remote -v
-
           git add manifests/deployment.yaml
           git commit -m "chore: deploy ${{ github.event.inputs.version }}"
-          git push origin HEAD:deploy
+
+          # ⬇️ Пушим напрямую, минуя origin
+          git push "https://x-access-token:${PAT}@github.com/${{ github.repository }}" HEAD:deploy
