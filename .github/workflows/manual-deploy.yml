@@ -30,16 +30,17 @@ jobs:
           echo "👉 Образ в манифесте:"
           yq '.spec.template.spec.containers[0].image' manifests/deployment.yaml
 
-      - name: Commit & push to deploy (PAT)
+      - name: Commit & push to deploy (via PAT)
         env:
           PAT: ${{ secrets.PERSONAL_TOKEN }}
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-          git remote remove origin
+          git remote remove origin || true
           git remote add origin https://x-access-token:${PAT}@github.com/${{ github.repository }}
 
+          git remote -v          # ← покажет URL с токеном
           git add manifests/deployment.yaml
           git commit -m "chore: deploy ${{ github.event.inputs.version }}"
           git push origin HEAD:deploy
