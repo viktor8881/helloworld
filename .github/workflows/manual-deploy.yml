@@ -26,12 +26,16 @@ jobs:
         run: |
           yq e '.spec.template.spec.containers[0].image = "ghcr.io/${{ github.repository_owner }}/helloworld:${{ github.event.inputs.version }}"' -i manifests/deployment.yaml
 
-      - name: Commit and push changes to deploy (via PAT)
-        env:
-          TOKEN: ${{ secrets.PERSONAL_TOKEN }}
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
-          git commit -am "chore: deploy ${{ github.event.inputs.version }}"
-          git push origin deploy
+            - name: Commit and push changes to deploy (via PAT)
+              env:
+                TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+              run: |
+                git config user.name github-actions
+                git config user.email github-actions@github.com
+
+                # Удаляем origin и создаём заново с персональным токеном
+                git remote remove origin
+                git remote add origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
+
+                git commit -am "chore: deploy ${{ github.event.inputs.version }}"
+                git push origin HEAD:deploy
