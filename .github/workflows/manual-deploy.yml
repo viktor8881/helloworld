@@ -28,21 +28,23 @@ jobs:
           echo "🔍 Новый образ:"
           grep image manifests/deployment.yaml
 
-      - name: Commit and push changes to deploy (via PAT)
-        env:
-          TOKEN: ${{ secrets.PERSONAL_TOKEN }}
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
+            - name: Commit and push changes to deploy (via PAT)
+              env:
+                TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+              run: |
+                git config user.name github-actions
+                git config user.email github-actions@github.com
 
-          # Заменяем origin с авторизацией через PAT
-          git remote remove origin
-          git remote add origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
+                # удаляем origin и пересоздаём с PAT
+                git remote remove origin
+                git remote add origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
 
-          echo "📦 Git статус перед пушем:"
-          git status
-          git diff manifests/deployment.yaml
+                echo "📦 Git статус перед пушем:"
+                git status
+                git diff manifests/deployment.yaml
 
-          git add manifests/deployment.yaml
-          git commit -m "chore: deploy ${{ github.event.inputs.version }}"
-          git push origin HEAD:deploy
+                git add manifests/deployment.yaml
+                git commit -m "chore: deploy ${{ github.event.inputs.version }}"
+
+                # пушим явно текущую HEAD в ветку deploy
+                git push origin HEAD:deploy
