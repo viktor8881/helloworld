@@ -20,6 +20,3 @@ spec:
           image: ghcr.io/viktor8881/helloworld:v3
           ports:
             - containerPort: 8080
-          # image: nginx:alpine # для проверки. потом подставишь свой образ
-          # ports:
-          #   - containerPort: 80 # nginx слушает 80
