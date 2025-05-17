@@ -5,10 +5,10 @@ package server
 
 import (
 	"context"
-	"github.com/viktor8881/helloworld/generated"
-	"github
 	"github.com/viktor8881/service-utilities/http/server"
+	"go.uber.org/zap"
 	"github.com/viktor8881/helloworld/generated"
+)
 
 
 func MainPage(
@@ -16,7 +16,7 @@ func MainPage(
 	decodeFn server.DecodeRequestFunc,
 	serviceFn func(ctx context.Context, in *generated.EmptyRequest) (*generated.AnyTextResponse, error),
 	encodeFn server.EncodeResponseFunc,
-	logger *zap.Logger,
+	errorHandlerFn server.ErrorHandlerFunc,
 	logger *zap.Logger,	
 	middlewares ...server.Middleware,
 ) {
@@ -29,18 +29,20 @@ func MainPage(
 			return serviceFn(ctx, in.(*generated.EmptyRequest))
 		},
 		encodeFn,
-		logger,
+		errorHandlerFn,
 		logger,	
 		append(middlewares, server.LoggerMiddleware(logger))...,
 	)
 }
+
+
 
 func AliveEndpoint(
 	t *server.Transport,
 	decodeFn server.DecodeRequestFunc,
 	serviceFn func(ctx context.Context, in *generated.EmptyRequest) (*generated.EmptyResponse, error),
 	encodeFn server.EncodeResponseFunc,
-	logger *zap.Logger,
+	errorHandlerFn server.ErrorHandlerFunc,
 	logger *zap.Logger,	
 	middlewares ...server.Middleware,
 ) {
@@ -53,8 +55,10 @@ func AliveEndpoint(
 			return serviceFn(ctx, in.(*generated.EmptyRequest))
 		},
 		encodeFn,
-		logger,
+		errorHandlerFn,
 		logger,	
 		append(middlewares, server.LoggerMiddleware(logger))...,
 	)
 }
+
+
