@@ -1,0 +1,36 @@
+server:
+    port: ${SERVER_PORT}
+    host: ${SERVER_HOST}
+
+database:
+    type: ${DB_TYPE}
+    dsn: ${DB_DSN}
+    max_open_conns: 10
+    max_idle_conns: 10
+    conn_max_lifetime: 10
+
+autotrade:
+    buy-limit:
+        rub: 25000
+        usd: 500
+
+external_services:
+    tbot:
+        token: ${TELEGRAM_BOT_TOKEN}
+        channelID: ${TELEGRAM_CHANNEL_ID}
+        autoTradingCron: "56 * * * *"
+        timeout: 30
+
+    invest:
+        account_id: ${TINKOFF_INVEST_ACCOUNT_ID}
+        token: ${TINKOFF_INVEST_TOKEN}
+        end_point: ${TINKOFF_ENDPOINT}
+        app_name: invest-api-go-sdk
+        disable_resource_exhausted_retry: false
+        disable_all_retry: false
+        max_retries: 3
+
+    prediction:
+        base_url: ${PREDICTION_BASE_URL}
+        api_token: ${PREDICTION_API_TOKEN}
+        timeout: 20

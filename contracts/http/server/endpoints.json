@@ -1,0 +1,22 @@
+[
+  {
+    "Name": "MainPage",
+    "Description": "root",
+    "Method": "GET",
+    "Url": "/",
+    "ServiceName": "MainPage",
+    "ServiceMethod": "MainPage",
+    "InputRequest": "EmptyRequest",
+    "OutputResponse": "AnyTextResponse"
+  },
+  {
+    "Name": "AliveEndpoint",
+    "Description": "alive",
+    "Method": "GET",
+    "Url": "/alive",
+    "ServiceName": "Alive",
+    "ServiceMethod": "Alive",
+    "InputRequest": "EmptyRequest",
+    "OutputResponse": "EmptyResponse"
+  }
+]

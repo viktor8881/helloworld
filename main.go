@@ -1,19 +1,41 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"github.com/spf13/viper"
+	appHttp "github.com/viktor8881/service-utilities/http"
+	"go.uber.org/zap"
 	"log"
-	"net/http"
 )
 
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Привет, весь мир!")
-		fmt.Fprintln(w, "Привет, весь мир!")
-		fmt.Fprintln(w, "Привет, весь мир!")
-		fmt.Fprintln(w, "Работает! я спать.")
-		fmt.Fprintln(w, "Работает! добра утра.")
-	})
-	log.Println("Сервер запущен на :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	ctx := context.Background()
+
+	logger, err := zap.NewProduction()
+	if err != nil {
+		log.Fatalf("failed create logger: %w", err)
+	}
+	defer logger.Sync()
+
+	err = LoadConfig()
+	if err != nil {
+		log.Fatalf("failed load config: %w", err)
+	}
+
+	fmt.Println(viper.AllSettings())
+
+	app := appHttp.NewApp(viper.GetString("server.host")+":"+viper.GetString("server.port"), logger)
+	closeFuncs := RegisterRoutes(ctx, app.Mux, logger)
+	for _, f := range closeFuncs {
+		defer f()
+	}
+	app.Run()
+}
+
+func LoadConfig() error {
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+	viper.SetConfigType("yaml")
+	return viper.ReadInConfig()
 }
