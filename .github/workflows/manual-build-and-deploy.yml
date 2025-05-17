@@ -37,6 +37,7 @@ jobs:
         run: |
           docker buildx build \
             --platform linux/amd64 \
+            --build-arg GITHUB_TOKEN=${{ secrets.PERSONAL_TOKEN }} \
             -t $IMAGE_NAME:${{ github.event.inputs.version }} \
             -t $IMAGE_NAME:latest \
             --push .
