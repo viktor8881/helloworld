@@ -7,25 +7,23 @@ on:
         description: "Тег образа (например v1.2.3)"
         required: true
 
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/helloworld
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
     permissions:
-      contents: write        # чтобы пушить в репозиторий
-      packages: write        # чтобы пушить образ в GHCR
-
-    env:
-      IMAGE: ghcr.io/${{ github.repository_owner }}/helloworld:${{ github.event.inputs.version }}
-      DEPLOY_BRANCH: deploy
+      contents: write
+      packages: write
 
     steps:
-      # 1. Код нужен только для сборки
-      - uses: actions/checkout@v4
+      # ---------- 1. Checkout код (main) и собираем образ ----------
+      - name: Checkout main (source code)
+        uses: actions/checkout@v4
         with:
-          ref: ${{ env.DEPLOY_BRANCH }}
+          ref: main
 
-      # 2. Set up Buildx + login в GHCR (GITHUB_TOKEN достаточно)
       - uses: docker/setup-buildx-action@v3
 
       - uses: docker/login-action@v3
@@ -34,33 +32,41 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 3. Собираем и пушим образ
       - name: Build & push image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          platforms: linux/amd64
-          tags: ${{ env.IMAGE }}
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            -t $IMAGE_NAME:${{ github.event.inputs.version }} \
+            -t $IMAGE_NAME:latest \
+            --push .
 
-      # 4. Устанавливаем yq
+      # ---------- 2. Переключаемся на ветку deploy ----------
+      - name: Checkout deploy branch
+        uses: actions/checkout@v4
+        with:
+          ref: deploy
+          path: deploy-repo # кладём во вторую папку
+
       - name: Install yq
         run: |
           curl -sSL https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
             -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
 
-      # 5. Патчим deployment.yaml
-      - name: Update image tag in deployment.yaml
+      - name: Patch image tag in deployment.yaml
+        working-directory: deploy-repo
         run: |
-          yq -i '.spec.template.spec.containers[0].image = "${{ env.IMAGE }}"' manifests/deployment.yaml
-          echo "Новый образ:"
+          yq -i '.spec.template.spec.containers[0].image = "'$IMAGE_NAME':${{ github.event.inputs.version }}"' manifests/deployment.yaml
+          echo "🔍 Новый образ:"
           yq '.spec.template.spec.containers[0].image' manifests/deployment.yaml
 
-      # 6. Коммит + пуш (GITHUB_TOKEN достаточен, потому что пушим из actions в ту же ветку)
-      - name: Commit & push manifests
+      - name: Commit & push to deploy
+        working-directory: deploy-repo
+        env:
+          GIT_AUTHOR_NAME: github-actions
+          GIT_AUTHOR_EMAIL: github-actions@github.com
+          GIT_COMMITTER_NAME: github-actions
+          GIT_COMMITTER_EMAIL: github-actions@github.com
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
           git add manifests/deployment.yaml
-          git commit -m "deploy: ${{ env.IMAGE }}"
-          git push origin ${{ env.DEPLOY_BRANCH }}
+          git commit -m "deploy: $IMAGE_NAME:${{ github.event.inputs.version }}"
+          git push origin HEAD:deploy
