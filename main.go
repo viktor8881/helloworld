@@ -11,6 +11,7 @@ func main() {
 		fmt.Fprintln(w, "Привет, весь мир!")
 		fmt.Fprintln(w, "Привет, весь мир!")
 		fmt.Fprintln(w, "Привет, весь мир!")
+		fmt.Fprintln(w, "Работает! я спать.")
 	})
 	log.Println("Сервер запущен на :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
