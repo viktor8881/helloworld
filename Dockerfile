@@ -1,6 +1,7 @@
 FROM golang:1.22-alpine AS builder
 WORKDIR /app
 COPY . .
+RUN apk add --no-cache git gettext
 RUN apk add --no-cache git
 # Configure Git to use HTTPS with GitHub token from build arg
 ARG GITHUB_TOKEN
