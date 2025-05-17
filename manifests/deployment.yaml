@@ -18,6 +18,6 @@ spec:
     spec:
       containers:
         - name: helloworld
-          image: ghcr.io/viktor8881/helloworld:v0.0.235
+          image: ghcr.io/viktor8881/helloworld:v17.5.1504
           ports:
             - containerPort: 8080
