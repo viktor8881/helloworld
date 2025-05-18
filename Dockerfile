@@ -16,6 +16,7 @@ RUN GOOS=linux GOARCH=amd64 go build -mod=vendor -o app .
 
 FROM alpine:3.19
 WORKDIR /app
+RUN apk add --no-cache gettext
 COPY --from=builder /app/app .
 COPY config.yaml.dist .
 COPY entrypoint.sh .
