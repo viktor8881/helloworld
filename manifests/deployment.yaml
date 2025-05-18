@@ -21,3 +21,6 @@ spec:
           image: ghcr.io/viktor8881/helloworld:v18.5.207
           ports:
             - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: investbot-secret
